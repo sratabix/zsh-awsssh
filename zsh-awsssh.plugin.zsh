@@ -25,11 +25,11 @@ _aws_print_help() {
 Usage: awsssh [options]
 
 Options:
-  --region=REGION           AWS region for queries and sessions. Required if no default region is configured.
-  --profile=PROFILE         AWS CLI profile to use.
-  --connection=TYPE         Connection method: ssh or ssm (default: ssm).
-  --instance=NAME           Skip fzf; connect to the first instance matching this Name tag or instance ID.
-  --forward=SPEC            Port forward spec local:host:remote. Repeat flag for multiple forwards.
+  --region REGION           AWS region for queries and sessions. Required if no default region is configured.
+  --profile PROFILE         AWS CLI profile to use.
+  --connection TYPE         Connection method: ssh or ssm (default: ssm).
+  --instance NAME           Skip fzf; connect to the first instance matching this Name tag or instance ID.
+  --forward SPEC            Port forward spec local:host:remote. Repeat flag for multiple forwards.
   --help, -h                Show this help message and exit.
 
 Examples:
@@ -199,17 +199,57 @@ _aws_ssh_main() {
       _aws_print_help
       return 0
       ;;
+    --region)
+      if [[ $# -lt 2 || $2 == -* ]]; then
+        echo "AWSSSH:ERROR: --region flag requires a value."
+        return 1
+      fi
+      region="$2"
+      shift
+      ;;
     --region=*)
       region="${1#*=}"
+      ;;
+    --connection)
+      if [[ $# -lt 2 || $2 == -* ]]; then
+        echo "AWSSSH:ERROR: --connection flag requires a value."
+        return 1
+      fi
+      connection="$2"
+      shift
       ;;
     --connection=*)
       connection="${1#*=}"
       ;;
+    --profile)
+      if [[ $# -lt 2 || $2 == -* ]]; then
+        echo "AWSSSH:ERROR: --profile flag requires a value."
+        return 1
+      fi
+      profile="$2"
+      shift
+      ;;
     --profile=*)
       profile="${1#*=}"
       ;;
+    --forward)
+      if [[ $# -lt 2 || $2 == -* ]]; then
+        echo "AWSSSH:ERROR: --forward flag requires a value."
+        return 1
+      fi
+      forwards+=("$2")
+      shift
+      ;;
     --forward=*)
       forwards+=("${1#*=}")
+      ;;
+    --instance)
+      if [[ $# -lt 2 || $2 == -* ]]; then
+        echo "AWSSSH:ERROR: --instance flag requires a value."
+        return 1
+      fi
+      instance_filter="$2"
+      shift
       ;;
     --instance=*)
       instance_filter="${1#*=}"
