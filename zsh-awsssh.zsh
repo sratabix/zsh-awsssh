@@ -1,6 +1,12 @@
 #!/usr/bin/env zsh
 # aws-ssh.plugin.zsh
 
+_AWSSSH_DEBUG=${_AWSSSH_DEBUG:-0}
+
+_aws_debug() {
+  [[ "$_AWSSSH_DEBUG" == "1" ]] && echo "AWSSSH:DEBUG: $*" >&2
+}
+
 # Check for AWS credentials
 _aws_check_credentials() {
   local profile=$1
@@ -30,6 +36,7 @@ Options:
   --connection TYPE         Connection method: ssh or ssm (default: ssm).
   --instance NAME           Skip fzf; connect to the first instance matching this Name tag or instance ID.
   --forward SPEC            Port forward spec local:host:remote. Repeat flag for multiple forwards.
+  --debug, -d               Enable debug output.
   --help, -h                Show this help message and exit.
 
 Examples:
@@ -71,17 +78,18 @@ _aws_query_for_instances() {
 
   "${aws_cmd[@]}" |
     grep -vE '^None$' |
-    # Ensure awk prints fields in the correct order
-    awk '{printf "%-30s\t%-20s\t%-15s\t%-15s\t%-15s\t%-20s\t%-10s\t%s\n", $1, $2, $3, $4, $5, $6, $7, $8}'
+    # Ensure awk prints fields in the correct order; use tab separator to handle spaces in names
+    awk -F'\t' '{printf "%-30s\t%-20s\t%-15s\t%-15s\t%-15s\t%-20s\t%-10s\t%s\n", $1, $2, $3, $4, $5, $6, $7, $8}'
 }
 
 # Handle SSH connection
 _aws_ssh_command() {
   local selection=$1 connection=$2 region=$3 profile=$4 forwards_str=$5
-  local name=$(echo $selection | awk '{print $1}')
-  local public_dns=$(echo $selection | awk '{print $8}')
-  local instance_id=$(echo $selection | awk '{print $2}')
-  local instance_status=$(echo $selection | awk '{print $5}')
+  local name=$(echo "$selection" | awk -F'\t' '{print $1}')
+  local public_dns=$(echo "$selection" | awk -F'\t' '{print $8}')
+  local instance_id=$(echo "$selection" | awk -F'\t' '{print $2}')
+  local instance_status=$(echo "$selection" | awk -F'\t' '{print $5}')
+  _aws_debug "name=$name instance_id=$instance_id status=$instance_status connection=$connection"
   local ssh_user="ec2-user"
   local -a forwards
 
@@ -166,8 +174,9 @@ _launch_connections() {
     tmux has-session -t "asw_ssh" 2>/dev/null || tmux new-session -d -s "asw_ssh"
 
     while IFS= read -r selection; do
-      local name=$(echo $selection | awk '{print $1}')
-      local instance_id=$(echo $selection | awk '{print $2}')
+      local name=$(echo "$selection" | awk -F'\t' '{print $1}')
+      local instance_id=$(echo "$selection" | awk -F'\t' '{print $2}')
+      _aws_debug "launching window for name=$name instance_id=$instance_id"
       local window_name="ssh:${name}:${instance_id}"
 
       if ! tmux list-windows -t "asw_ssh" | grep -q "$window_name"; then
@@ -198,6 +207,9 @@ _aws_ssh_main() {
     --help|-h)
       _aws_print_help
       return 0
+      ;;
+    --debug|-d)
+      _AWSSSH_DEBUG=1
       ;;
     --region)
       if [[ $# -lt 2 || $2 == -* ]]; then
@@ -267,6 +279,7 @@ _aws_ssh_main() {
     return 1
   fi
 
+  _aws_debug "region=$region profile=$profile connection=$connection instance_filter=$instance_filter forwards=${forwards[*]}"
   _aws_check_credentials "$profile" || return 1
   local forwards_str="${(j:,:)forwards}"
   if [[ -n "$instance_filter" ]]; then
