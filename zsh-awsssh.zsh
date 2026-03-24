@@ -85,10 +85,10 @@ _aws_query_for_instances() {
 # Handle SSH connection
 _aws_ssh_command() {
   local selection=$1 connection=$2 region=$3 profile=$4 forwards_str=$5
-  local name=$(echo "$selection" | awk -F'\t' '{print $1}')
-  local public_dns=$(echo "$selection" | awk -F'\t' '{print $8}')
-  local instance_id=$(echo "$selection" | awk -F'\t' '{print $2}')
-  local instance_status=$(echo "$selection" | awk -F'\t' '{print $5}')
+  local name=$(echo "$selection" | awk -F'\t' '{gsub(/^[[:space:]]+|[[:space:]]+$/, "", $1); print $1}')
+  local public_dns=$(echo "$selection" | awk -F'\t' '{gsub(/^[[:space:]]+|[[:space:]]+$/, "", $8); print $8}')
+  local instance_id=$(echo "$selection" | awk -F'\t' '{gsub(/^[[:space:]]+|[[:space:]]+$/, "", $2); print $2}')
+  local instance_status=$(echo "$selection" | awk -F'\t' '{gsub(/^[[:space:]]+|[[:space:]]+$/, "", $5); print $5}')
   _aws_debug "name=$name instance_id=$instance_id status=$instance_status connection=$connection"
   local ssh_user="ec2-user"
   local -a forwards
@@ -174,8 +174,8 @@ _launch_connections() {
     tmux has-session -t "asw_ssh" 2>/dev/null || tmux new-session -d -s "asw_ssh"
 
     while IFS= read -r selection; do
-      local name=$(echo "$selection" | awk -F'\t' '{print $1}')
-      local instance_id=$(echo "$selection" | awk -F'\t' '{print $2}')
+      local name=$(echo "$selection" | awk -F'\t' '{gsub(/^[[:space:]]+|[[:space:]]+$/, "", $1); print $1}')
+      local instance_id=$(echo "$selection" | awk -F'\t' '{gsub(/^[[:space:]]+|[[:space:]]+$/, "", $2); print $2}')
       _aws_debug "launching window for name=$name instance_id=$instance_id"
       local window_name="ssh:${name}:${instance_id}"
 
