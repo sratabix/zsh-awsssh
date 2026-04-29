@@ -302,7 +302,7 @@ _aws_ssh_main() {
   _launch_connections "$selections" "$region" "$profile" "$forwards_str"
 }
 
-alias awsssh='_aws_ssh_main'
+awsssh() { _aws_ssh_main "$@" }
 
 _awsssh_complete_region() {
   local regions selected

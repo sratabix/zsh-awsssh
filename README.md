@@ -8,19 +8,15 @@ Originally by Mrugesh Mohapatra, Modified by sratabix.
 
 ## Installation
 
-Requires [fzf](https://github.com/junegunn/fzf)
+Requires [fzf](https://github.com/junegunn/fzf) and the AWS Session Manager plugin.
 
-### Zplug
-
-```zsh
-zplug "sratabix/zsh-awsssh"
-```
-
-### Antigen
+### AWS Session Manager plugin (macOS)
 
 ```zsh
-antigen bundle sratabix/zsh-awsssh
+brew install --cask session-manager-plugin
 ```
+
+For other platforms, see the [AWS docs](https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html).
 
 ### Oh-My-Zsh
 
@@ -33,13 +29,6 @@ plugins=(
   #...
   zsh-awsssh
   )
-```
-
-### Manual
-
-```zsh
-git clone https://github.com/sratabix/zsh-awsssh.git
-source zsh-awsssh/awsssh.plugin.zsh
 ```
 
 ## Usage
