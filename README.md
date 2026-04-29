@@ -10,7 +10,19 @@ Originally by Mrugesh Mohapatra, Modified by sratabix.
 
 Requires [fzf](https://github.com/junegunn/fzf) and the AWS Session Manager plugin.
 
-### AWS Session Manager plugin (macOS)
+### Quick install (macOS + Oh-My-Zsh)
+
+```zsh
+brew install fzf
+brew install --cask session-manager-plugin
+git clone https://github.com/sratabix/zsh-awsssh.git "$ZSH_CUSTOM/plugins/zsh-awsssh"
+sed -i '' 's/^plugins=(/plugins=(zsh-awsssh /' "$HOME/.zshrc"
+source "$HOME/.zshrc"
+```
+
+### Manual steps
+
+#### AWS Session Manager plugin (macOS)
 
 ```zsh
 brew install --cask session-manager-plugin
@@ -18,7 +30,7 @@ brew install --cask session-manager-plugin
 
 For other platforms, see the [AWS docs](https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html).
 
-### Oh-My-Zsh
+#### Oh-My-Zsh
 
 ```zsh
 git clone https://github.com/sratabix/zsh-awsssh.git $ZSH_CUSTOM/plugins/zsh-awsssh
